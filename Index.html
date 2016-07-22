@@ -1,0 +1,152 @@
+<title>Deadzone Tester</title>
+
+DeadZone:
+<select id="dz">
+   <option selected>None</option>
+   <option         >Square</option>
+   <option         >Diagonal</option>
+   <option         >Pure Diagonal</option>
+   <option         >Eight Way Analogue</option>
+   <option         >Eight Way Digital</option>
+   <option         >Circle</option>
+</select><br>
+
+Amount:
+<input type="range" id="amount"></input><a id="amount.display"></a><br>
+
+<button onclick="let style=ctx.fillStyle;ctx.fillStyle='white';ctx.fillRect(0,0,100000,100000);ctx.fillStyle=style;">Clear</button>
+
+<canvas id="canvas"></canvas>
+<script src="Imperium.js"></script>
+<script>
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.replace(new RegExp(search, 'g'), replacement);
+};
+</script>
+
+
+<script>
+
+   //Init
+   let dg = function(x){return document.getElementById(x);}
+   let canvas = dg("canvas");
+   canvas.width = window.innerWidth-50;
+   canvas.height = window.innerHeight-50;
+   let ctx = canvas.getContext("2d");
+   let gp = new Imperium();
+   let pvdz = "none";
+
+   //Run Time Vars
+   let spacing = 100;
+   ctx.fillStyle = "black";
+   ctx.font="20px Georgia";
+   ctx.strokeStyle = "black";
+
+   //Function Definitions
+   function dz() {
+      return dg("dz").value.toLowerCase().replaceAll(" ",".");
+   }
+
+   function dza() {
+      return dg("amount").value/100;
+   }
+
+   function circle(x,y,r) {
+      r = r || 10;
+      x = 700 + 300*x;
+      y = 500 + 300*y;
+      ctx.arc(x,y,r,0,2*Math.PI);
+   }
+
+   function doTheThing(x,y) {
+
+      if (dz() == "square") {
+         if (Math.abs(x) < dza()){x = 0;}
+         if (Math.abs(y) < dza()){y = 0;}
+      }
+
+      if (dz() == "diagonal") {
+         if (Math.abs(x) > dza() && Math.abs(y) > dza()) {
+            let num = (Math.abs(x) + Math.abs(y))/2;
+            x = Math.sign(x) * num;
+            y = Math.sign(y) * num;
+         }
+      }
+
+      if (dz() == "pure.diagonal") {
+         if (Math.abs(x) > dza() && Math.abs(y) > dza()) {
+            let num = (Math.abs(x) + Math.abs(y))/2;
+            x = Math.sign(x) * num;
+            y = Math.sign(y) * num;
+         } else {
+            x = Math.sign(x);
+            y = Math.sign(y);
+         }
+      }
+
+      if (dz() == "eight.way.analogue") {
+         let num = (Math.abs(x) + Math.abs(y))/2;
+         if (Math.abs(x) < dza()){x = 0;}
+         if (Math.abs(y) < dza()){y = 0;}
+         x = Math.sign(x) * num;
+         y = Math.sign(y) * num;
+      }
+
+      if (dz() == "eight.way.digital") {
+         if (Math.abs(x) < dza()){x = 0;}
+         if (Math.abs(y) < dza()){y = 0;}
+         x = Math.sign(x);
+         y = Math.sign(y);
+      }
+
+      if (dz() == "circle") {
+         
+
+
+      }
+
+      return [x,y];
+   }
+
+   function clear() {
+      let style = ctx.fillStyle
+      ctx.fillStyle = "white";
+      ctx.fillRect(0,0,100000,100000);
+      ctx.fillStyle = style;
+   }
+
+   //'Engine' Definitions
+   function draw() {
+      ctx.beginPath();
+
+
+      var x = (gp.getAxisX("left",0));
+      var y = (gp.getAxisY("left",0));
+
+      let res = doTheThing(x,y);
+      x = res[0];
+      y = res[1];
+
+      //Draw The Circle
+      circle(x,y);
+      ctx.fill();
+   }
+
+   function update() {
+      //Update Display
+      dg("amount.display").innerHTML = "&nbsp;&nbsp;&nbsp;"+dza();
+
+      //Clear
+      if (pvdz != dz())
+         clear();
+      pvdz = dz();
+
+      draw();
+      window.requestAnimationFrame(update);
+   }
+
+   //Start!
+   update();
+
+</script>
